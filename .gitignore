@@ -1,2 +1,20 @@
+# Ignore all compiled Java class files
+*.class
+
+# Ignore all JAR files (including your local MySQL connector)
+*.jar
+
+# Ignore IDE/editor config directories (optional, but recommended)
 .idea/
+.vscode/
+*.iml
+
+# Ignore build directories (if any)
+bin/
 out/
+build/
+
+# Ignore OS and editor temp files
+.DS_Store
+*~
+*.swp
