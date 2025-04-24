@@ -23,16 +23,6 @@ public class Database {
     }
   }
 
-//  public boolean activateJDBC() {
-//    try {
-//      DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
-//      return true;
-//    } catch (SQLException e) {
-//      e.printStackTrace();
-//      return false;
-//    }
-//  }
-
   public String handleMessage(String message) {
     try {
       String[] parts = message.split(":");

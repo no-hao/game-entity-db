@@ -8,7 +8,6 @@ public class Server {
 
   public static void main(String[] args) {
     Database db = new Database();
-//    db.activateJDBC();
     db.createConnection();
 
     try (ServerSocket serverSocket = new ServerSocket(PORT)) {
