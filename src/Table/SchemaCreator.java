@@ -275,7 +275,7 @@ public class SchemaCreator {
             debugLog("Creating CHARACTERSPRESENT table...");
             statement.executeUpdate("CREATE TABLE CHARACTERSPRESENT (" +
                 "lId VARCHAR(12) NOT NULL, " +
-                "cId VARCHAR(12) NOT NULL, " +
+                "cId VARCHAR(20) NOT NULL, " +
                 "PRIMARY KEY (lId), " +
                 "FOREIGN KEY (lId) REFERENCES LOCATION (lId), " +
                 "FOREIGN KEY (cId) REFERENCES GAMECHARACTER (name))");
