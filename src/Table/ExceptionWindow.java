@@ -3,8 +3,19 @@ package Table;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * A window that shows an error that has occurred.
+ * If an error occurred during any operation this window will give
+ * a message explaining what happened for the user.
+ *
+ * @author Zach Kline
+ */
 public class ExceptionWindow extends JFrame {
 
+  /**
+   * Create new exceptionWindow, to show user an error message popup.
+   * @param errorMessage What message should be shown
+   */
   public ExceptionWindow(String errorMessage) {
     super("Error");
     setDefaultCloseOperation(DISPOSE_ON_CLOSE);

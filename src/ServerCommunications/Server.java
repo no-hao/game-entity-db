@@ -7,10 +7,21 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * Server that will interact directly with the DB and clients
+ * This adds a level of security when using a DB.
+ *
+ * @author Adolfo
+ */
 public class Server {
   private static final int PORT = 4446;
 
-  public static void main(String[] args) {
+  /**
+   * Start the server and listen for clients.
+   * Handle when the server receives a message from a client
+   * and send a response back.
+   */
+  public Server() {
     Database db = new Database();
     db.createConnection();
 

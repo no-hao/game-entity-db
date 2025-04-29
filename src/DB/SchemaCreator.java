@@ -90,7 +90,7 @@ public class SchemaCreator {
             statement.executeUpdate("CREATE TABLE MANAGER (" +
                 "loginId VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (loginId), " +
-                "FOREIGN KEY (loginId) REFERENCES PERSON (loginId))");
+                "FOREIGN KEY (loginId) REFERENCES PERSON (loginId) ON DELETE CASCADE)");
             
             // Create MODERATOR table
             debugLog("Creating MODERATOR table...");
@@ -100,8 +100,8 @@ public class SchemaCreator {
                 "isBlocked BOOLEAN NOT NULL, " +
                 "worksWith VARCHAR(12), " +
                 "PRIMARY KEY (loginId), " +
-                "FOREIGN KEY (loginId) REFERENCES PERSON (loginId), " +
-                "FOREIGN KEY (worksWith) REFERENCES MANAGER (loginId))");
+                "FOREIGN KEY (loginId) REFERENCES PERSON (loginId) ON DELETE CASCADE, " +
+                "FOREIGN KEY (worksWith) REFERENCES MANAGER (loginId) ON DELETE SET NULL)");
             
             // Create PLAYER table
             debugLog("Creating PLAYER table...");
@@ -111,8 +111,8 @@ public class SchemaCreator {
                 "isBlocked BOOLEAN NOT NULL, " +
                 "watchedBy VARCHAR(12), " +
                 "PRIMARY KEY (loginId), " +
-                "FOREIGN KEY (loginId) REFERENCES PERSON (loginId), " +
-                "FOREIGN KEY (watchedBy) REFERENCES PERSON (loginId))");
+                "FOREIGN KEY (loginId) REFERENCES PERSON (loginId) ON DELETE CASCADE, " +
+                "FOREIGN KEY (watchedBy) REFERENCES PERSON (loginId) ON DELETE SET NULL)");
             
             // Create LOCATION table
             debugLog("Creating LOCATION table...");
@@ -127,8 +127,8 @@ public class SchemaCreator {
             statement.executeUpdate("CREATE TABLE EXITSTO (" +
                 "enterId VARCHAR(12) NOT NULL, " +
                 "exitId VARCHAR(12) NOT NULL, " +
-                "FOREIGN KEY (enterId) REFERENCES LOCATION (lId), " +
-                "FOREIGN KEY (exitId) REFERENCES LOCATION (lId))");
+                "FOREIGN KEY (enterId) REFERENCES LOCATION (lId) ON DELETE CASCADE, " +
+                "FOREIGN KEY (exitId) REFERENCES LOCATION (lId) ON DELETE CASCADE)");
             
             // Create GAMECHARACTER table
             debugLog("Creating GAMECHARACTER table...");
@@ -142,7 +142,7 @@ public class SchemaCreator {
                 "profilePicture MEDIUMBLOB, " +
                 "locationId VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (name), " +
-                "FOREIGN KEY (locationId) REFERENCES LOCATION (lId))");
+                "FOREIGN KEY (locationId) REFERENCES LOCATION (lId) ON DELETE CASCADE)");
             
             // Create ITEM table
             debugLog("Creating ITEM table...");
@@ -154,7 +154,7 @@ public class SchemaCreator {
                 "isTwoHanded BOOLEAN NOT NULL, " +
                 "ownedBy VARCHAR(20), " +
                 "PRIMARY KEY (IdItem), " +
-                "FOREIGN KEY (ownedBy) REFERENCES GAMECHARACTER (name))");
+                "FOREIGN KEY (ownedBy) REFERENCES GAMECHARACTER (name) ON DELETE CASCADE)");
             
             // Create ARMOR table
             debugLog("Creating ARMOR table...");
@@ -164,7 +164,7 @@ public class SchemaCreator {
                 "equipLocation VARCHAR(12) NOT NULL, " +
                 "isEquiped BOOLEAN NOT NULL, " +
                 "PRIMARY KEY (aId), " +
-                "FOREIGN KEY (aId) REFERENCES ITEM (IdItem))");
+                "FOREIGN KEY (aId) REFERENCES ITEM (IdItem) ON DELETE CASCADE)");
             
             // Create CONTAINER table
             debugLog("Creating CONTAINER table...");
@@ -173,7 +173,7 @@ public class SchemaCreator {
                 "volume INT NOT NULL, " +
                 "weight DECIMAL(4,2) NOT NULL, " +
                 "PRIMARY KEY (cId), " +
-                "FOREIGN KEY (cId) REFERENCES ITEM (IdItem))");
+                "FOREIGN KEY (cId) REFERENCES ITEM (IdItem) ON DELETE CASCADE)");
             
             // Create CONTAINEDIN table
             debugLog("Creating CONTAINEDIN table...");
@@ -182,7 +182,7 @@ public class SchemaCreator {
                 "IdItem VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (cId), " +
                 "FOREIGN KEY (cId) REFERENCES CONTAINER (cId), " +
-                "FOREIGN KEY (IdItem) REFERENCES ITEM (IdItem))");
+                "FOREIGN KEY (IdItem) REFERENCES ITEM (IdItem) ON DELETE CASCADE)");
             
             // Create ABILITY table
             debugLog("Creating ABILITY table...");
@@ -201,7 +201,7 @@ public class SchemaCreator {
                 "wId VARCHAR(12) NOT NULL, " +
                 "ability VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (wId), " +
-                "FOREIGN KEY (wId) REFERENCES ITEM (IdItem))");
+                "FOREIGN KEY (wId) REFERENCES ITEM (IdItem) ON DELETE CASCADE)");
             
             // Create CREATURE table
             debugLog("Creating CREATURE table...");
@@ -214,8 +214,8 @@ public class SchemaCreator {
                 "locationId VARCHAR(12) NOT NULL, " +
                 "ability VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (name), " +
-                "FOREIGN KEY (locationId) REFERENCES LOCATION (lId), " +
-                "FOREIGN KEY (ability) REFERENCES ABILITY (name))");
+                "FOREIGN KEY (locationId) REFERENCES LOCATION (lId) ON DELETE CASCADE, " +
+                "FOREIGN KEY (ability) REFERENCES ABILITY (name) ON DELETE CASCADE)");
             
             // Create CREATURELIKES table
             debugLog("Creating CREATURELIKES table...");
@@ -223,8 +223,8 @@ public class SchemaCreator {
                 "cId VARCHAR(12) NOT NULL, " +
                 "rId VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (cId), " +
-                "FOREIGN KEY (cId) REFERENCES CREATURE (name), " +
-                "FOREIGN KEY (rId) REFERENCES CREATURE (name))");
+                "FOREIGN KEY (cId) REFERENCES CREATURE (name) ON DELETE CASCADE, " +
+                "FOREIGN KEY (rId) REFERENCES CREATURE (name) ON DELETE CASCADE)");
             
             // Create CREATUREHATES table
             debugLog("Creating CREATUREHATES table...");
@@ -232,8 +232,8 @@ public class SchemaCreator {
                 "cId VARCHAR(12) NOT NULL, " +
                 "rId VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (cId), " +
-                "FOREIGN KEY (cId) REFERENCES CREATURE (name), " +
-                "FOREIGN KEY (rId) REFERENCES CREATURE (name))");
+                "FOREIGN KEY (cId) REFERENCES CREATURE (name) ON DELETE CASCADE, " +
+                "FOREIGN KEY (rId) REFERENCES CREATURE (name) ON DELETE CASCADE)");
             
             // Create PLAYERLIKES table
             debugLog("Creating PLAYERLIKES table...");
@@ -241,8 +241,8 @@ public class SchemaCreator {
                 "pId VARCHAR(12) NOT NULL, " +
                 "rId VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (pId), " +
-                "FOREIGN KEY (pId) REFERENCES PLAYER (loginId), " +
-                "FOREIGN KEY (rId) REFERENCES CREATURE (name))");
+                "FOREIGN KEY (pId) REFERENCES PLAYER (loginId) ON DELETE CASCADE, " +
+                "FOREIGN KEY (rId) REFERENCES CREATURE (name) ON DELETE CASCADE)");
             
             // Create PLAYERHATES table
             debugLog("Creating PLAYERHATES table...");
@@ -250,8 +250,8 @@ public class SchemaCreator {
                 "pId VARCHAR(12) NOT NULL, " +
                 "rId VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (pId), " +
-                "FOREIGN KEY (pId) REFERENCES PLAYER (loginId), " +
-                "FOREIGN KEY (rId) REFERENCES CREATURE (name))");
+                "FOREIGN KEY (pId) REFERENCES PLAYER (loginId) ON DELETE CASCADE, " +
+                "FOREIGN KEY (rId) REFERENCES CREATURE (name) ON DELETE CASCADE)");
             
             // Create ALLOWEDTOGO table
             debugLog("Creating ALLOWEDTOGO table...");
@@ -259,8 +259,8 @@ public class SchemaCreator {
                 "cId VARCHAR(12) NOT NULL, " +
                 "lId VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (cId), " +
-                "FOREIGN KEY (cId) REFERENCES CREATURE (name), " +
-                "FOREIGN KEY (lId) REFERENCES LOCATION (lId))");
+                "FOREIGN KEY (cId) REFERENCES CREATURE (name) ON DELETE CASCADE, " +
+                "FOREIGN KEY (lId) REFERENCES LOCATION (lId) ON DELETE CASCADE)");
             
             // Create ITEMSPRESENT table
             debugLog("Creating ITEMSPRESENT table...");
@@ -268,8 +268,8 @@ public class SchemaCreator {
                 "lId VARCHAR(12) NOT NULL, " +
                 "ItemId VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (lId), " +
-                "FOREIGN KEY (lId) REFERENCES LOCATION (lId), " +
-                "FOREIGN KEY (ItemId) REFERENCES ITEM (IdItem))");
+                "FOREIGN KEY (lId) REFERENCES LOCATION (lId) ON DELETE CASCADE, " +
+                "FOREIGN KEY (ItemId) REFERENCES ITEM (IdItem) ON DELETE CASCADE)");
             
             // Create CHARACTERSPRESENT table
             debugLog("Creating CHARACTERSPRESENT table...");
@@ -277,8 +277,8 @@ public class SchemaCreator {
                 "lId VARCHAR(12) NOT NULL, " +
                 "cId VARCHAR(20) NOT NULL, " +
                 "PRIMARY KEY (lId), " +
-                "FOREIGN KEY (lId) REFERENCES LOCATION (lId), " +
-                "FOREIGN KEY (cId) REFERENCES GAMECHARACTER (name))");
+                "FOREIGN KEY (lId) REFERENCES LOCATION (lId) ON DELETE CASCADE, " +
+                "FOREIGN KEY (cId) REFERENCES GAMECHARACTER (name) ON DELETE CASCADE)");
             
             // Create CREATURESPRESENT table
             debugLog("Creating CREATURESPRESENT table...");
@@ -286,8 +286,8 @@ public class SchemaCreator {
                 "lId VARCHAR(12) NOT NULL, " +
                 "creatureId VARCHAR(12) NOT NULL, " +
                 "PRIMARY KEY (lId), " +
-                "FOREIGN KEY (lId) REFERENCES LOCATION (lId), " +
-                "FOREIGN KEY (creatureId) REFERENCES CREATURE (name))");
+                "FOREIGN KEY (lId) REFERENCES LOCATION (lId) ON DELETE CASCADE, " +
+                "FOREIGN KEY (creatureId) REFERENCES CREATURE (name) ON DELETE CASCADE )");
             
             System.out.println("Database schema created successfully!");
             

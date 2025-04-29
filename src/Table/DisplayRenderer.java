@@ -1,14 +1,19 @@
-package Display;
-
-import Table.TableType;
-import Table.TableWindow;
-import Table.TableWindowFactory;
+package Table;
 
 import javax.swing.*;
 import java.awt.FlowLayout;
 
+/**
+ * Main Menu to access different table in DB
+ *
+ * @author Zach Kline
+ */
 public class DisplayRenderer extends JFrame {
 
+  /**
+   * Create new Main Menu with buttons for any
+   * type of @class TableType.
+   */
   public DisplayRenderer() {
     setTitle("Main Menu");
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

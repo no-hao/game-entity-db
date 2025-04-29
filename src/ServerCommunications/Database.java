@@ -1,16 +1,22 @@
 package ServerCommunications;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Arrays;
 
+/**
+ * Creates Communication from Server to DB
+ *
+ * @author Adolfo
+ */
 public class Database {
+
+  //URL of DB
   public static final String DB_LOCATION = "jdbc:mysql://db.engr.ship.edu:3306/cmsc471_18?useTimezone=true&serverTimezone=UTC";
+
+  //Login Name of DB
   public static final String LOGIN_NAME = "cmsc471_18";
+
+  //Password of DB
   public static final String PASSWORD = "Password_18";
   protected Connection m_dbConn = null;
 
@@ -24,6 +30,33 @@ public class Database {
     try {
       m_dbConn = DriverManager.getConnection(DB_LOCATION, LOGIN_NAME, PASSWORD);
       isConnected = true;
+
+      try (Statement s = m_dbConn.createStatement()) {
+        s.execute("DROP PROCEDURE IF EXISTS get_characters_in_location");
+      }
+
+      // -- > PROCEDURE IS HERE <--
+      String createProc =
+              "CREATE PROCEDURE get_characters_in_location(IN location_id VARCHAR(12))\n" +
+                      "BEGIN\n" +
+                      "  DECLARE cnt INT DEFAULT 0;\n" +
+                      "  SELECT COUNT(*) INTO cnt\n" +
+                      "    FROM CHARACTERSPRESENT\n" +
+                      "   WHERE lId = location_id;\n" +
+                      "  IF cnt = 0 THEN\n" +
+                      "    SELECT CONCAT('No characters in location ', location_id) AS message;\n" +
+                      "  ELSE\n" +
+                      "    SELECT gc.*\n" +
+                      "      FROM GAMECHARACTER gc\n" +
+                      "      JOIN CHARACTERSPRESENT cp ON gc.name = cp.cId\n" +
+                      "     WHERE cp.lId = location_id;\n" +
+                      "  END IF;\n" +
+                      "END";
+      try (Statement s = m_dbConn.createStatement()) {
+        s.execute(createProc);
+      }
+      // -- > PROCEDURE IS HERE <--
+
       return true;
     } catch (SQLException e) {
       System.err.println("Database connection failed: " + e.getMessage());
@@ -80,6 +113,46 @@ public class Database {
     }
   }
 
+
+  /**
+   * Handles a procedure
+   * parts[1] = procedure name
+   * parts>1 = in parameters
+   *
+   * @author Zach Kline
+   */
+  private String handleProcedure(String[] parts) throws SQLException {
+    if (parts.length < 2) {
+      return "ERROR: Malformed PROC call.";
+    }
+
+    StringBuilder placeholders = new StringBuilder();
+    for (int i = 2; i < parts.length; i++) {
+      placeholders.append("?,");
+    }
+    if (placeholders.length() > 0) {
+      placeholders.setLength(placeholders.length() - 1);
+    }
+
+    String sql = "{CALL " + parts[1] + "(" + placeholders + ")}";
+    try (CallableStatement stmt = m_dbConn.prepareCall(sql)) {
+      // bind each in parameter
+      for (int i = 2; i < parts.length; i++) {
+        stmt.setString(i - 1, parts[i]);
+      }
+
+      boolean hasResult = stmt.execute();
+      if (hasResult) {
+        try (ResultSet rs = stmt.getResultSet()) {
+          return resultSetToCSV(rs);
+        }
+      }
+
+      int count = stmt.getUpdateCount();
+      return (count >= 0) ? (count + " row(s) affected.") : "Procedure executed.";
+    }
+  }
+
   /**
    * Handles the INSERT command.
    * Parses the command and executes the corresponding SQL INSERT statement.
@@ -116,23 +189,71 @@ public class Database {
    * @return The result of the SELECT operation.
    */
   private String handleSelect(String[] parts) throws SQLException {
-    if (parts.length != 5) return "ERROR: Malformed SELECT.";
+    if (parts.length == 3 && "*".equals(parts[2])) {
+      String sql = "SELECT * FROM " + parts[1];
+      try (Statement stmt = m_dbConn.createStatement();
+           ResultSet rs = stmt.executeQuery(sql)) {
+        return resultSetToCSV(rs);
+      }
+    }
 
-    String sql = "SELECT * FROM " + parts[1] + " WHERE " + parts[2] + " " + parts[3] + " ?";
-    PreparedStatement stmt = m_dbConn.prepareStatement(sql);
-    stmt.setString(1, parts[4]);
-    ResultSet rs = stmt.executeQuery();
+    if (parts.length == 5) {
+      String table = parts[1];
+      String sql;
+      PreparedStatement stmt;
 
-    ResultSetMetaData meta = rs.getMetaData();
+      if (parts[3].matches("=|<>|<|>|<=|>=")) {
+        sql = "SELECT * FROM " + table +
+                " WHERE " + parts[2] + " " + parts[3] + " ?";
+        stmt = m_dbConn.prepareStatement(sql);
+        stmt.setString(1, parts[4]);
+      } else {
+        sql = "SELECT " + parts[2] +
+                " FROM " + table +
+                " WHERE " + parts[3] + " = ?";
+        stmt = m_dbConn.prepareStatement(sql);
+        stmt.setString(1, parts[4]);
+      }
+
+      try (ResultSet rs = stmt.executeQuery()) {
+        return resultSetToCSV(rs);
+      }
+    }
+
+    if (parts.length >= 4) {
+      String table = parts[1];
+      String[] cols = Arrays.copyOfRange(parts, 2, parts.length);
+      String sql = "SELECT " + String.join(",", cols) +
+              " FROM " + table;
+      try (Statement stmt = m_dbConn.createStatement();
+           ResultSet rs = stmt.executeQuery(sql)) {
+        return resultSetToCSV(rs);
+      }
+    }
+
+    return "ERROR: Malformed SELECT.";
+  }
+
+  /**
+   * Helper Function that turns
+   * Multiple values into a single
+   * string seperated by commas.
+   * @param rs
+   * @return
+   * @throws SQLException
+   */
+  private String resultSetToCSV(ResultSet rs) throws SQLException {
     StringBuilder sb = new StringBuilder();
-
+    ResultSetMetaData meta = rs.getMetaData();
+    int colCount = meta.getColumnCount();
     while (rs.next()) {
-      for (int i = 1; i <= meta.getColumnCount(); i++) {
-        sb.append(meta.getColumnName(i)).append(": ").append(rs.getString(i)).append(" | ");
+      for (int i = 1; i <= colCount; i++) {
+        sb.append(rs.getString(i));
+        if (i < colCount) sb.append(",");
       }
       sb.append("\n");
     }
-    return sb.length() == 0 ? "No results found." : sb.toString();
+    return sb.length() == 0 ? "No results found." : sb.toString().trim();
   }
 
   /**

@@ -1,14 +1,24 @@
 package Table;
 
+import Exceptions.InvalidDeleteException;
+import Exceptions.InvalidInsertException;
 import Exceptions.InvalidUpdateException;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * The main window for showing table information.
+ * Shows title of what table is being shown.
+ * Table of all rows in the db.
+ * Able to insert new data into the table.
+ * Able to remove rows from the table.
+ * Able to update existing data in the table.
+ *
+ * @author Zach Kline
+ */
 public class TableWindow extends JFrame {
   private JTable table;
   private DefaultTableModel tableModel;
@@ -23,6 +33,12 @@ public class TableWindow extends JFrame {
   private JButton btnInsert;
   private JLabel lblPageInfo;
 
+
+  /**
+   * Create a new window displaying a @class DataProvider
+   * @param provider Selected DataProvider
+   * @param title Title of window
+   */
   public TableWindow(DataProvider provider, String title) {
     super(title);
     this.provider = provider;
@@ -44,6 +60,7 @@ public class TableWindow extends JFrame {
     };
     table = new JTable(tableModel);
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    table.getTableHeader().setReorderingAllowed(false);
 
     //update value (double click)
     table.addMouseListener(new MouseAdapter() {
@@ -65,7 +82,14 @@ public class TableWindow extends JFrame {
         int row = table.getSelectedRow();
         if (row >= 0) {
           int globalRow = (currentPage - 1) * rowsPerPage + row;
-          provider.deleteRow(globalRow);
+          try {
+            provider.deleteRow(globalRow);
+          } catch (InvalidDeleteException ex) {
+            SwingUtilities.invokeLater(() -> {
+              ExceptionWindow ew = new ExceptionWindow(ex.getMessage());
+              ew.setVisible(true);
+            });
+          }
           totalPages = (int) Math.ceil((double) provider.getRowData().length / rowsPerPage);
           if (currentPage > totalPages) currentPage = totalPages;
           updateTable();
@@ -94,7 +118,7 @@ public class TableWindow extends JFrame {
           //may need to remove depending on db sorting
           currentPage = totalPages;
           updateTable();
-        } catch (InvalidUpdateException ex) {
+        } catch (InvalidUpdateException | InvalidInsertException ex) {
           SwingUtilities.invokeLater(() -> {
             ExceptionWindow ew = new ExceptionWindow(ex.getMessage());
             ew.setVisible(true);
@@ -178,6 +202,11 @@ public class TableWindow extends JFrame {
     setLocationRelativeTo(null);
   }
 
+  /**
+   * Display data relative to
+   * current page.
+   * @return Data.
+   */
   private Object[][] getPageData() {
     int start = (currentPage - 1) * rowsPerPage;
     int end = Math.min(start + rowsPerPage, provider.getRowData().length);
@@ -189,11 +218,19 @@ public class TableWindow extends JFrame {
     return pageData;
   }
 
+  /**
+   * Refresh values in shown table.
+   */
   private void updateTable() {
     tableModel.setDataVector(getPageData(), provider.getColumnNames());
     updateNavButtons();
   }
 
+  /**
+   * Page system buttons
+   * Toggle buttons on/off
+   * Update current page number
+   */
   private void updateNavButtons() {
     lblPageInfo.setText("Page " + currentPage + " of " + totalPages);
     btnPrev.setEnabled(currentPage > 1);
@@ -201,6 +238,13 @@ public class TableWindow extends JFrame {
   }
 
 
+  /**
+   * Value has been updated
+   * Update @class DataProvider with
+   * new value.
+   * @param row Row of updated value.
+   * @param col Col of updated value.
+   */
   private void handleValueUpdate(int row, int col) {
     if (row < 0 || col < 0) {
       return;

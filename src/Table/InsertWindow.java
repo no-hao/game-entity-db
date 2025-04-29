@@ -7,14 +7,27 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.function.Consumer;
 
+
+/**
+ * Window that prompts for all required information
+ * needed to insert a new row into table.
+ *
+ * @author Zach Kline
+ */
 public class InsertWindow extends JFrame {
+
+  /**
+   * Create new window asking for insert Columns from @class DataProvider
+   * @param provider What display should be used.
+   * @param onInsert When response is made go to Consumer.
+   */
   public InsertWindow(DataProvider provider, Consumer<Object[]> onInsert) {
     super("Insert Row");
     setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     setLayout(new BorderLayout(10, 10));
 
     //table
-    String[] cols = provider.getColumnNames();
+    String[] cols = provider.getInsertColumnNames();
     DefaultTableModel model = new DefaultTableModel(cols, 1) {
       @Override public boolean isCellEditable(int row, int col) { return true; }
     };

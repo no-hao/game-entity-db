@@ -1,7 +1,13 @@
 package Table;
 
+/**
+ * All type of displays needed.
+ *
+ * @author Zach Kline
+ */
 public enum TableType {
-  USERS,
-  TABLE2,
-  TABLE3,
+  CHARACTERS,
+  PLAYERS,
+  ABILITIES,
+  LOCATIONS
 }

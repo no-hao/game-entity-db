@@ -4,6 +4,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.function.Consumer;
 
+/**
+ * Open Window for input of updated value
+ * in a table.
+ *
+ * @author Zach Kline
+ */
 public class UpdateValueWindow extends JFrame {
   public UpdateValueWindow(Object oldValue, Consumer<Object> onPut) {
     super("Updating: " + oldValue);
