@@ -6,6 +6,9 @@ import Exceptions.InvalidInsertException;
 import Exceptions.InvalidUpdateException;
 import ServerCommunications.DBDataProvider;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Handles DisplayFour of assignment
  * Give/Update/Insert data related to LOCATION table in the db
@@ -77,12 +80,50 @@ public class DisplayFourDataProvider implements DataProvider {
    */
   @Override
   public void updateData(int row, int col, Object value) throws InvalidUpdateException {
-    if (row < 0 || row >= data.length || col < 1 || col > 2) {
-      throw new InvalidUpdateException("Can only update Size or Type");
+    if (row < 0 || row >= data.length || col < 1 || col > 3) {
+      throw new InvalidUpdateException("Can only update Size, Type or Exits");
     }
     String lId   = (String) data[row][0];
     String dbCol = (col == 1 ? "size" : "type");
-    String cmd   = String.format("UPDATE:LOCATION:%s:%s:lId:%s", dbCol, value, lId);
+
+    if (col == 3) {
+      String oldExitsStr = (String) data[row][3];
+      String newExitsStr = value.toString();
+
+      //build sets of old and new exits
+      Set<String> oldExits = new HashSet<>();
+      if (oldExitsStr != null && !oldExitsStr.isEmpty()) {
+        for (String s : oldExitsStr.split("\\s*,\\s*")) oldExits.add(s);
+      }
+      Set<String> newExits = new HashSet<>();
+      if (newExitsStr != null && !newExitsStr.isEmpty()) {
+        for (String s : newExitsStr.split("\\s*,\\s*")) newExits.add(s);
+      }
+
+      try {
+        //add new ones to db
+        for (String exit : newExits) {
+          if (!oldExits.contains(exit)) {
+            String insertCmd = String.format("INSERT:EXITSTO:enterId:exitId:%s:%s", lId, exit);
+            DBDataProvider.sql(insertCmd);
+          }
+        }
+        //delete ones removed
+        for (String exit : oldExits) {
+          if (!newExits.contains(exit)) {
+            String deleteCmd = String.format("DELETE:EXITSTO:enterId:exitId:%s:%s", lId, exit);
+            DBDataProvider.sql(deleteCmd);
+          }
+        }
+      } catch (DBException ex) {
+        throw new InvalidUpdateException("Error updating Exits: " + ex.getMessage());
+      }
+
+      data[row][col] = newExitsStr;
+      return;
+    }
+
+    String cmd = String.format("UPDATE:LOCATION:%s:%s:lId:%s", dbCol, value, lId);
 
     try {
       DBDataProvider.sql(cmd);
