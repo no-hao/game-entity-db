@@ -98,11 +98,15 @@ public class DisplayTwoDataProvider implements DataProvider {
     }
 
     //add check for db and if error from db return false
-    if (false) {
-      throw new InvalidUpdateException("DB update error invalid type");
+    String cmd = String.format("UPDATE:PERSON:email:%s:loginId:%s", value, data[row][0]);
+
+    try {
+      DBDataProvider.sql(cmd);
+      data[row][col] = value;
+    } catch (DBException ex) {
+      throw new InvalidUpdateException(ex.getMessage());
     }
 
-    data[row][col] = value;
   }
 
 
