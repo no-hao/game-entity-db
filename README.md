@@ -100,7 +100,6 @@ The application connects to a MySQL database with the following default settings
 - Username: <YOUR_DB_USERNAME>
 - Password: <YOUR_DB_PASSWORD>
 
-> **Note:** For security, set your own database credentials in your configuration or environment. Do not use real passwords or sensitive information in public repositories.
 
 ## Error Handling
 
