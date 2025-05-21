@@ -94,11 +94,13 @@ The database includes several interconnected tables:
 ## Database Connection
 
 The application connects to a MySQL database with the following default settings:
-- Host: db.engr.ship.edu
-- Port: 3306
-- Database: cmsc471_18
-- Username: cmsc471_18
-- Password: Password_18
+- Host: <YOUR_DB_HOST>
+- Port: <YOUR_DB_PORT>
+- Database: <YOUR_DB_NAME>
+- Username: <YOUR_DB_USERNAME>
+- Password: <YOUR_DB_PASSWORD>
+
+> **Note:** For security, set your own database credentials in your configuration or environment. Do not use real passwords or sensitive information in public repositories.
 
 ## Error Handling
 
